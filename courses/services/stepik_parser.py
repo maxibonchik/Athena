@@ -2,30 +2,63 @@
 
 from .stepik_client import StepikClient
 
+
 class StepikParser:
+    """
+    Парсер курса Stepik.
+    Получает:
+     - информацию о курсе
+     - секции (если есть)
+     - units → уроки
+     - уроки со summary
+    Возвращает готовый JSON для записи в базу.
+    """
+
     def __init__(self):
         self.client = StepikClient()
 
     def parse_course(self, course_id) -> dict:
-        # 1) Получаем основную информацию о курсе
+        """
+        Основной метод: собирает ВСЮ структуру курса в единый JSON.
+        """
+
+        # 1) Получаем данные курса
         course_data = self.client.get_course(course_id)
         course = course_data.get("courses", [None])[0]
 
         if not course:
             raise ValueError(f"Курс с ID {course_id} не найден")
 
-        title = course.get("title")
+        title = course.get("title", "")
         description = course.get("description", "")
 
-        # 2) Получаем sections (модули)
-        sections_resp = self.client.get_sections(course_id)
-        sections = sections_resp.get("sections", [])
-
-        # 3) Получаем units — это связка modules → lessons
+        # 2) Получаем units (они связывают sections и lessons)
         units_resp = self.client.get_units(course_id)
         units = units_resp.get("units", [])
 
-        # создаём соответствие: section_id → list(lesson_id)
+        # Собираем уникальные section_id
+        all_section_ids = {u["section"] for u in units if u.get("section")}
+
+        # 3) Пытаемся получить секции через Stepik API
+        sections_resp = self.client.get_sections(course_id)
+        sections = sections_resp.get("sections", [])
+
+        # ----
+        # ВАЖНО: Stepik может НЕ отдавать список секций.
+        # Тогда мы создадим их вручную по section_id.
+        # ----
+        if not sections:
+            print("⚠️ Stepik API не вернул sections — создаём виртуальную структуру.")
+            sections = [
+                {
+                    "id": sid,
+                    "title": f"Section {sid}",
+                    "position": i + 1
+                }
+                for i, sid in enumerate(sorted(all_section_ids))
+            ]
+
+        # 4) Формируем соответствие: section_id → list(lesson_id)
         section_to_lessons = {}
 
         for unit in units:
@@ -37,19 +70,17 @@ class StepikParser:
 
             section_to_lessons.setdefault(section_id, []).append(lesson_id)
 
-        # 4) Получаем список всех ID уроков
+        # 5) Получаем все уроки
         all_lesson_ids = []
-        for lessons_list in section_to_lessons.values():
-            all_lesson_ids.extend(lessons_list)
+        for lesson_list in section_to_lessons.values():
+            all_lesson_ids.extend(lesson_list)
 
-        # убираем дубли
         all_lesson_ids = list(set(all_lesson_ids))
 
-        # 5) Получаем детали уроков
         lessons_resp = self.client.get_lessons(all_lesson_ids)
-        lessons = {l["id"]: l for l in lessons_resp.get("lessons", [])}
+        lessons = {lesson["id"]: lesson for lesson in lessons_resp.get("lessons", [])}
 
-        # 6) Собираем единый JSON
+        # 6) Собираем финальные модули
         modules = []
 
         for section in sections:
@@ -64,7 +95,6 @@ class StepikParser:
 
             lesson_ids = section_to_lessons.get(section_id, [])
 
-            # добавляем уроки в модуль
             for lid in lesson_ids:
                 lesson = lessons.get(lid)
                 if not lesson:
@@ -75,15 +105,15 @@ class StepikParser:
                     "title": lesson.get("title", ""),
                     "summary": lesson.get("summary", ""),
                     "position": lesson.get("position", 0),
-                    "steps": []  # потом будем заполнять
+                    "steps": []  # сюда добавим позже шаги урока (контент)
                 })
 
             modules.append(module)
 
-        # сортируем модули по позиции
+        # сортировка
         modules = sorted(modules, key=lambda m: m["position"])
 
-        # итоговый JSON
+        # 7) Собираем итоговый JSON
         return {
             "original_course_id": course_id,
             "title": title,
