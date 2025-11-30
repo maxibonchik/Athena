@@ -80,7 +80,7 @@ WSGI_APPLICATION = 'Athena.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'athena_db',
+        'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': '6978Qwarry',  # пустой пароль
         'HOST': 'localhost',
