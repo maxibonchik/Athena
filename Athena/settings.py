@@ -12,6 +12,13 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from dotenv import load_dotenv
 load_dotenv()
 from pathlib import Path
+# settings.py
+import os
+from dotenv import load_dotenv  # pip install python-dotenv
+
+load_dotenv()
+
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,12 +45,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'corsheaders',
     'users',
     'courses',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -52,7 +60,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+CORS_ALLOW_ALL_ORIGINS = True  # Для разработки
+CORS_ALLOW_CREDENTIALS = True
 ROOT_URLCONF = 'Athena.urls'
 
 TEMPLATES = [
