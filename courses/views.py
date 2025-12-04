@@ -103,4 +103,11 @@ class SubmitCognitiveTestView(View):
             return JsonResponse({
                 'success': False,
                 'error': f'Ошибка сервера: {str(e)}'
-            }, status=500)
+            }, status=500)       
+# main/views.py
+from django.shortcuts import render
+
+def index(request):
+    # Можно передать статичный контент, если нужен
+    context = {'title': 'Афина — Ваш ИИ-наставник для обучения'}
+    return render(request, 'main/index.html', context)

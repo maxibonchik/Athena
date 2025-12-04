@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Афина - Когнитивный тест</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .test-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .question-card {
+            text-align: center;
+        }
+
+        .question-card h2 {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .question-card h3 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 1.4rem;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .option-btn {
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .loading, .results {
+            text-align: center;
+            color: white;
+            padding: 60px 20px;
+        }
+
+        .results h1 {
+            margin-bottom: 20px;
+        }
+
+        .restart-btn {
+            padding: 15px 30px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .error {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            color: #d32f2f;
+        }
+
+        .results-card {
+            background: white;
+            color: #333;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>🧠 Афина - Ваш персональный учитель</h1>
+            <p>Пройдите когнитивный тест для персонализации обучения</p>
+        </header>
+        
+        <main id="app">
+            <div class="loading">
+                <h2>Загружаем вопросы теста...</h2>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        class CognitiveTest {
+            constructor() {
+                this.questions = [];
+                this.currentQuestion = 0;
+                this.answers = {};
+                this.appElement = document.getElementById('app');
+            }
+
+            async init() {
+                await this.loadQuestions();
+                this.renderQuestion();
+            }
+
+            async loadQuestions() {
+                try {
+                    const response = await fetch('http://localhost:8000/courses/api/cognitive-test/questions/');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.questions = data.questions;
+                        this.renderQuestion();
+                    } else {
+                        this.showError('Не удалось загрузить вопросы: ' + data.error);
+                    }
+                } catch (error) {
+                    this.showError('Ошибка загрузки вопросов: ' + error.message);
+                    console.error('Error:', error);
+                }
+            }
+
+            renderQuestion() {
+                if (this.questions.length === 0) {
+                    this.showError('Вопросы не загружены');
+                    return;
+                }
+
+                const question = this.questions[this.currentQuestion];
+                const progress = ((this.currentQuestion + 1) / this.questions.length) * 100;
+
+                this.appElement.innerHTML = `
+                    <div class="test-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                        
+                        <div class="question-card">
+                            <h2>Вопрос ${this.currentQuestion + 1} из ${this.questions.length}</h2>
+                            <h3>${question.question_text}</h3>
+                            
+                            <div class="options">
+                                <button class="option-btn" onclick="test.handleAnswer('a')">
+                                    A: ${question.options.a}
+                                </button>
+                                <button class="option-btn" onclick="test.handleAnswer('b')">
+                                    B: ${question.options.b}
+                                </button>
+                                <button class="option-btn" onclick="test.handleAnswer('c')">
+                                    C: ${question.options.c}
+                                </button>
+                                <button class="option-btn" onclick="test.handleAnswer('d')">
+                                    D: ${question.options.d}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            handleAnswer(answer) {
+                const question = this.questions[this.currentQuestion];
+                this.answers[question.question_number] = answer;
+
+                if (this.currentQuestion < this.questions.length - 1) {
+                    this.currentQuestion++;
+                    this.renderQuestion();
+                } else {
+                    this.submitTest();
+                }
+            }
+
+            async submitTest() {
+                try {
+                    this.appElement.innerHTML = `
+                        <div class="loading">
+                            <h2>Анализируем ваши ответы...</h2>
+                        </div>
+                    `;
+
+                    const response = await fetch('http://localhost:8000/courses/api/cognitive-test/submit/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ answers: this.answers }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.showResults(data);
+                    } else {
+                        throw new Error(data.error || 'Неизвестная ошибка');
+                    }
+
+                } catch (error) {
+                    this.showError('Ошибка при отправке результатов: ' + error.message);
+                    console.error('Error:', error);
+                }
+            }
+
+            showResults(data) {
+                const results = data.results;
+                const recommendations = data.recommendations;
+                
+                this.appElement.innerHTML = `
+                    <div class="results">
+                        <h1>🎉 Тест завершен!</h1>
+                        
+                        <div class="results-card">
+                            <h2>Ваш профиль обучения</h2>
+                            
+                            <div class="result-item">
+                                <span><strong>Стиль обучения:</strong></span>
+                                <span>${this.getLearningStyleName(results.learning_style)}</span>
+                            </div>
+                            
+                            <div class="result-item">
+                                <span><strong>Оценка памяти:</strong></span>
+                                <span>${results.memory_score}/10</span>
+                            </div>
+                            
+                            <div class="result-item">
+                                <span><strong>Самодисциплина:</strong></span>
+                                <span>${results.discipline_score}/10</span>
+                            </div>
+                            
+                            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                                <h3>💡 Рекомендации:</h3>
+                                <p><strong>Формат:</strong> ${recommendations.learning_format.join(', ')}</p>
+                                <p><strong>Стратегия:</strong> ${recommendations.study_strategy.join(', ')}</p>
+                                <p><strong>Техники памяти:</strong> ${recommendations.memory_techniques.join(', ')}</p>
+                                <p><strong>Темп:</strong> ${recommendations.pace}</p>
+                            </div>
+                        </div>
+                        
+                        <button class="restart-btn" onclick="test.restart()">Пройти еще раз</button>
+                    </div>
+                `;
+            }
+
+            getLearningStyleName(style) {
+                const styles = {
+                    'visual': 'Визуал',
+                    'auditory': 'Аудиал', 
+                    'reading': 'Чтение/Письмо',
+                    'kinesthetic': 'Кинестет',
+                    'mixed': 'Смешанный'
+                };
+                return styles[style] || style;
+            }
+
+            showError(message) {
+                this.appElement.innerHTML = `
+                    <div class="error">
+                        <h2>Произошла ошибка</h2>
+                        <p>${message}</p>
+                        <button class="restart-btn" onclick="test.restart()">Попробовать снова</button>
+                    </div>
+                `;
+            }
+
+            restart() {
+                this.currentQuestion = 0;
+                this.answers = {};
+                this.appElement.innerHTML = '<div class="loading"><h2>Загружаем вопросы теста...</h2></div>';
+                this.init();
+            }
+        }
+
+        // Создаем и запускаем тест
+        const test = new CognitiveTest();
+        test.init();
+    </script>
+</body>
+</html>

@@ -29,6 +29,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure--$tbz5^_wyo)dr&cm$))_+4$f+__2tff2^#t2a28*@sxsy51qa'
+# Статические файлы
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -48,6 +54,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'users',
     'courses',
+    'main',
 ]
 
 MIDDLEWARE = [
@@ -67,7 +74,7 @@ ROOT_URLCONF = 'Athena.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS':  [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
