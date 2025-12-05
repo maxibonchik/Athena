@@ -1,30 +1,6 @@
+# users/admin.py - ПРОСТАЯ ВЕРСИЯ
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User
-from django.contrib.auth.models import Group
+from django.contrib.auth.admin import UserAdmin
+from .models import CustomUser
 
-class UserAdmin(BaseUserAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name')
-
-    list_filter = ('groups',)
-
-    fieldsets = (
-        (None, {'fields': ('username', 'password')}),
-        ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
-        ('Permissions', {'fields': ('groups', 'user_permissions')}),
-        ('Important dates', {'fields': ('last_login', 'date_joined')}),
-    )
-
-    add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('username', 'email', 'password1', 'password2')}
-        ),
-    )
-
-    search_fields = ('username', 'email', 'first_name', 'last_name')
-    ordering = ('username',)
-
-admin.site.unregister(Group)
-
-admin.site.register(User, UserAdmin)
+admin.site.register(CustomUser, UserAdmin)

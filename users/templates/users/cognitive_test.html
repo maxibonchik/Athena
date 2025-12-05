@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Когнитивный тест | Афина</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .section-header {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 5px solid #4f46e5;
+        }
+        
+        .question-card {
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .question-card:hover {
+            border-color: #4f46e5;
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.1);
+        }
+        
+        .form-check-label {
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: block;
+        }
+        
+        .form-check-input:checked + .form-check-label {
+            background: rgba(79, 70, 229, 0.1);
+            border-left: 4px solid #4f46e5;
+        }
+        
+        .progress-section {
+            position: sticky;
+            top: 20px;
+        }
+        
+        .progress {
+            height: 10px;
+        }
+        
+        .nav-tabs .nav-link {
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: #4f46e5;
+            border-bottom: 3px solid #4f46e5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row">
+            <!-- Основной контент -->
+            <div class="col-lg-8">
+                <div class="test-container p-4 mb-4">
+                    <div class="text-center mb-4">
+                        <h1 class="fw-bold">Когнитивный тест Афины</h1>
+                        <p class="text-muted">Ответьте на 20 вопросов, чтобы мы создали ваш персональный план обучения</p>
+                        <div class="d-flex justify-content-center align-items-center">
+                            <div class="me-3">
+                                <i class="bi bi-clock text-primary"></i>
+                                <span class="ms-1">10-15 минут</span>
+                            </div>
+                            <div>
+                                <i class="bi bi-bar-chart text-primary"></i>
+                                <span class="ms-1">3 раздела</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="POST" id="test-form">
+                        {% csrf_token %}
+                        
+                        <!-- Навигация по разделам -->
+                        <ul class="nav nav-tabs mb-4" id="testTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="section1-tab" data-bs-toggle="tab" data-bs-target="#section1" type="button">
+                                    <i class="bi bi-eye"></i> Стиль обучения
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="section2-tab" data-bs-toggle="tab" data-bs-target="#section2" type="button">
+                                    <i class="bi bi-brain"></i> Память
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="section3-tab" data-bs-toggle="tab" data-bs-target="#section3" type="button">
+                                    <i class="bi bi-calendar-check"></i> Самодисциплина
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="section4-tab" data-bs-toggle="tab" data-bs-target="#section4" type="button">
+                                    <i class="bi bi-gear"></i> Настройки
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="testTabsContent">
+                            <!-- Раздел 1: Стиль обучения -->
+                            <div class="tab-pane fade show active" id="section1" role="tabpanel">
+                                <div class="section-header">
+                                    <h4 class="fw-bold mb-0">Раздел 1. Определение стиля обучения</h4>
+                                    <p class="text-muted mb-0">6 вопросов по мотивам VARK</p>
+                                </div>
+                                
+                                {% for i in "123456" %}
+                                <div class="question-card">
+                                    <h5 class="fw-bold mb-3">{{ forloop.counter }}. {{ form|get_field_label:"Q"|add:i }}</h5>
+                                    {% for choice in form|get_field_choices:"Q"|add:i %}
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="Q{{ i }}" 
+                                               id="Q{{ i }}_{{ choice.0 }}" value="{{ choice.0 }}" required>
+                                        <label class="form-check-label" for="Q{{ i }}_{{ choice.0 }}">
+                                            {{ choice.1 }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endfor %}
+                                
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button type="button" class="btn btn-outline-secondary" disabled>
+                                        <i class="bi bi-arrow-left"></i> Назад
+                                    </button>
+                                    <button type="button" class="btn btn-primary" onclick="goToSection(2)">
+                                        Далее: Память <i class="bi bi-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Раздел 2: Память -->
+                            <div class="tab-pane fade" id="section2" role="tabpanel">
+                                <div class="section-header">
+                                    <h4 class="fw-bold mb-0">Раздел 2. Память</h4>
+                                    <p class="text-muted mb-0">6 вопросов об особенностях вашей памяти</p>
+                                </div>
+                                
+                                {% for i in "123456" %}
+                                {% with j=forloop.counter|add:6 %}
+                                <div class="question-card">
+                                    <h5 class="fw-bold mb-3">{{ j }}. {{ form|get_field_label:"Q"|add:j|stringformat:"s" }}</h5>
+                                    {% for choice in form|get_field_choices:"Q"|add:j|stringformat:"s" %}
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="Q{{ j }}" 
+                                               id="Q{{ j }}_{{ choice.0 }}" value="{{ choice.0 }}" required>
+                                        <label class="form-check-label" for="Q{{ j }}_{{ choice.0 }}">
+                                            {{ choice.1 }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endwith %}
+                                {% endfor %}
+                                
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="goToSection(1)">
+                                        <i class="bi bi-arrow-left"></i> Назад
+                                    </button>
+                                    <button type="button" class="btn btn-primary" onclick="goToSection(3)">
+                                        Далее: Самодисциплина <i class="bi bi-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Раздел 3: Самодисциплина -->
+                            <div class="tab-pane fade" id="section3" role="tabpanel">
+                                <div class="section-header">
+                                    <h4 class="fw-bold mb-0">Раздел 3. Самодисциплина</h4>
+                                    <p class="text-muted mb-0">6 вопросов о ваших учебных привычках</p>
+                                </div>
+                                
+                                {% for i in "123456" %}
+                                {% with j=forloop.counter|add:12 %}
+                                <div class="question-card">
+                                    <h5 class="fw-bold mb-3">{{ j }}. {{ form|get_field_label:"Q"|add:j|stringformat:"s" }}</h5>
+                                    {% for choice in form|get_field_choices:"Q"|add:j|stringformat:"s" %}
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="Q{{ j }}" 
+                                               id="Q{{ j }}_{{ choice.0 }}" value="{{ choice.0 }}" required>
+                                        <label class="form-check-label" for="Q{{ j }}_{{ choice.0 }}">
+                                            {{ choice.1 }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endwith %}
+                                {% endfor %}
+                                
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="goToSection(2)">
+                                        <i class="bi bi-arrow-left"></i> Назад
+                                    </button>
+                                    <button type="button" class="btn btn-primary" onclick="goToSection(4)">
+                                        Далее: Настройки <i class="bi bi-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Раздел 4: Настройки -->
+                            <div class="tab-pane fade" id="section4" role="tabpanel">
+                                <div class="section-header">
+                                    <h4 class="fw-bold mb-0">Раздел 4. Дополнительные настройки</h4>
+                                    <p class="text-muted mb-0">Помогите нам оптимизировать ваш график</p>
+                                </div>
+                                
+                                <!-- Вопрос о концентрации -->
+                                <div class="question-card">
+                                    <h5 class="fw-bold mb-3">19. Сколько минут вы обычно можете концентрироваться на учёбе?</h5>
+                                    {% for choice in form.concentration_span.field.choices %}
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="concentration_span" 
+                                               id="concentration_{{ choice.0 }}" value="{{ choice.0 }}" required>
+                                        <label class="form-check-label" for="concentration_{{ choice.0 }}">
+                                            {{ choice.1 }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <!-- Вопрос о времени -->
+                                <div class="question-card">
+                                    <h5 class="fw-bold mb-3">20. В какое время суток вы наиболее продуктивны?</h5>
+                                    {% for choice in form.preferred_study_time.field.choices %}
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="preferred_study_time" 
+                                               id="time_{{ choice.0 }}" value="{{ choice.0 }}" required>
+                                        <label class="form-check-label" for="time_{{ choice.0 }}">
+                                            {{ choice.1 }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="goToSection(3)">
+                                        <i class="bi bi-arrow-left"></i> Назад
+                                    </button>
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="bi bi-check-circle"></i> Завершить тест
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Боковая панель прогресса -->
+            <div class="col-lg-4">
+                <div class="progress-section">
+                    <div class="test-container p-4">
+                        <h5 class="fw-bold mb-3">Ваш прогресс</h5>
+                        
+                        <!-- Прогресс бар -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Завершено</span>
+                                <span id="progressPercent">0%</span>
+                            </div>
+                            <div class="progress">
+                                <div id="progressBar" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Информация о пользователе -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold">Ваш профиль</h6>
+                            <p class="mb-1"><i class="bi bi-person text-primary"></i> {{ user.username }}</p>
+                            <p class="mb-1"><i class="bi bi-envelope text-primary"></i> {{ user.email }}</p>
+                        </div>
+                        
+                        <!-- Подсказки -->
+                        <div class="alert alert-info">
+                            <h6><i class="bi bi-lightbulb"></i> Советы по прохождению</h6>
+                            <ul class="mb-0 small">
+                                <li>Отвечайте честно, не задумываясь слишком долго</li>
+                                <li>Выбирайте первый пришедший в голову ответ</li>
+                                <li>Все вопросы обязательны для заполнения</li>
+                                <li>Вы можете вернуться к предыдущим разделам</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Навигация -->
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary" onclick="scrollToTop()">
+                                <i class="bi bi-arrow-up"></i> В начало раздела
+                            </button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-house"></i> Вернуться позже
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Навигация между разделами
+        function goToSection(sectionNumber) {
+            const tab = document.querySelector(`#section${sectionNumber}-tab`);
+            const tabInstance = new bootstrap.Tab(tab);
+            tabInstance.show();
+            scrollToTop();
+            updateProgress();
+        }
+        
+        // Обновление прогресса
+        function updateProgress() {
+            const totalQuestions = 20;
+            let answered = 0;
+            
+            // Считаем отвеченные вопросы
+            for (let i = 1; i <= 20; i++) {
+                const fieldName = i <= 18 ? `Q${i}` : 
+                                 i === 19 ? 'concentration_span' : 'preferred_study_time';
+                const inputs = document.querySelectorAll(`[name="${fieldName}"]:checked`);
+                if (inputs.length > 0) {
+                    answered++;
+                }
+            }
+            
+            // Обновляем прогресс бар
+            const percent = Math.round((answered / totalQuestions) * 100);
+            document.getElementById('progressPercent').textContent = `${percent}%`;
+            document.getElementById('progressBar').style.width = `${percent}%`;
+            
+            return percent;
+        }
+        
+        // Скролл к верху
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Обновляем прогресс при изменении ответов
+        document.querySelectorAll('input[type="radio"]').forEach(input => {
+            input.addEventListener('change', updateProgress);
+        });
+        
+        // Проверка перед отправкой
+        document.getElementById('test-form').addEventListener('submit', function(e) {
+            const percent = updateProgress();
+            if (percent < 100) {
+                e.preventDefault();
+                alert('Пожалуйста, ответьте на все вопросы перед отправкой!');
+                return false;
+            }
+        });
+        
+        // Инициализация прогресса
+        document.addEventListener('DOMContentLoaded', updateProgress);
+    </script>
+</body>
+</html>

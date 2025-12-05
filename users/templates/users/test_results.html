@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результаты теста | Афина</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+        }
+        
+        .profile-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .result-badge {
+            font-size: 1rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+        
+        .recommendation-card {
+            border-left: 5px solid #4f46e5;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+        
+        .progress-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(#4f46e5 0% var(--progress), #e9ecef var(--progress) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+        
+        .progress-circle-inner {
+            width: 90px;
+            height: 90px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <!-- Заголовок -->
+        <div class="text-center mb-5">
+            <h1 class="fw-bold">Ваш когнитивный профиль готов!</h1>
+            <p class="lead text-muted">ИИ проанализировал ваши ответы и создал персонализированные рекомендации</p>
+        </div>
+        
+        <div class="row">
+            <!-- Основные результаты -->
+            <div class="col-lg-8">
+                <div class="profile-card p-4 mb-4">
+                    <h3 class="fw-bold mb-4">📊 Основные показатели</h3>
+                    
+                    <div class="row mb-4">
+                        <!-- Стиль обучения -->
+                        <div class="col-md-4 mb-3">
+                            <div class="stat-card">
+                                <div class="mb-3">
+                                    <i class="bi bi-palette text-primary" style="font-size: 2rem;"></i>
+                                </div>
+                                <h5>Стиль обучения</h5>
+                                <div class="result-badge bg-primary text-white mb-2">{{ style_text }}</div>
+                                <p class="small text-muted">
+                                    {% if user.learning_style == 'visual' %}
+                                    Лучше воспринимаете информацию через изображения и схемы
+                                    {% elif user.learning_style == 'auditory' %}
+                                    Эффективнее учитесь через слуховое восприятие
+                                    {% elif user.learning_style == 'readwrite' %}
+                                    Предпочитаете текстовую информацию и конспекты
+                                    {% elif user.learning_style == 'kinesthetic' %}
+                                    Учитесь через практику и действия
+                                    {% else %}
+                                    Сочетаете несколько стилей обучения
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Память -->
+                        <div class="col-md-4 mb-3">
+                            <div class="stat-card">
+                                <div class="progress-circle" style="--progress: {{ user.memory_score }}0%">
+                                    <div class="progress-circle-inner">
+                                        {{ user.memory_score }}/10
+                                    </div>
+                                </div>
+                                <h5 class="mt-3">Память</h5>
+                                <div class="result-badge 
+                                    {% if user.memory_score >= 8 %}bg-success
+                                    {% elif user.memory_score >= 6 %}bg-info
+                                    {% elif user.memory_score >= 4 %}bg-warning
+                                    {% else %}bg-danger{% endif %} text-white mb-2">
+                                    {{ memory_text }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Самодисциплина -->
+                        <div class="col-md-4 mb-3">
+                            <div class="stat-card">
+                                <div class="progress-circle" style="--progress: {{ user.discipline_score }}0%">
+                                    <div class="progress-circle-inner">
+                                        {{ user.discipline_score }}/10
+                                    </div>
+                                </div>
+                                <h5 class="mt-3">Самодисциплина</h5>
+                                <div class="result-badge 
+                                    {% if user.discipline_score >= 8 %}bg-success
+                                    {% elif user.discipline_score >= 6 %}bg-info
+                                    {% elif user.discipline_score >= 4 %}bg-warning
+                                    {% else %}bg-danger{% endif %} text-white mb-2">
+                                    {{ discipline_text }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Детали стиля обучения -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3">🎯 Распределение стилей обучения</h5>
+                        <div class="row">
+                            {% for style, count in user.learning_style_details.style_counts.items %}
+                            <div class="col-3 mb-2">
+                                <div class="text-center">
+                                    <div class="fw-bold">{{ count }}/6</div>
+                                    <div class="small">
+                                        {% if style == 'visual' %}Визуал
+                                        {% elif style == 'auditory' %}Аудиал
+                                        {% elif style == 'readwrite' %}Чтение/Письмо
+                                        {% else %}Кинестетик{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Рекомендации от ИИ -->
+                <div class="profile-card p-4">
+                    <h3 class="fw-bold mb-4">🤖 Персонализированные рекомендации от ИИ</h3>
+                    
+                    {% if recommendations.error %}
+                    <div class="alert alert-warning">
+                        <p>Рекомендации временно недоступны. Вы можете продолжить без них.</p>
+                    </div>
+                    {% else %}
+                    
+                    <!-- Формат обучения -->
+                    <div class="recommendation-card p-3 mb-3">
+                        <h5><i class="bi bi-play-btn text-primary"></i> Формат обучения</h5>
+                        <p class="fw-bold">{{ recommendations.format.primary|default:"Смешанный формат" }}</p>
+                        <p class="small mb-2">Длительность сессии: {{ recommendations.format.session_duration|default:25 }} минут</p>
+                        <p class="small mb-0">Рекомендуемая частота: {{ recommendations.format.sessions_per_week|default:5 }} сессий в неделю</p>
+                    </div>
+                    
+                    <!-- Стратегия обучения -->
+                    <div class="recommendation-card p-3 mb-3">
+                        <h5><i class="bi bi-diagram-3 text-primary"></i> Стратегия обучения</h5>
+                        <p><strong>Методы повторения:</strong> 
+                            {{ recommendations.strategy.repetition_methods|join:", "|default:"Интервальные повторения" }}
+                        </p>
+                        <p><strong>Конспектирование:</strong> 
+                            {{ recommendations.strategy.note_taking|default:"Используйте визуальные заметки" }}
+                        </p>
+                    </div>
+                    
+                    <!-- Геймификация -->
+                    <div class="recommendation-card p-3 mb-3">
+                        <h5><i class="bi bi-trophy text-primary"></i> Геймификация</h5>
+                        <p><strong>Типы ачивок:</strong> 
+                            {{ recommendations.gamification.achievement_types|join:", "|default:"Прогресс, Дедлайны, Повторение" }}
+                        </p>
+                        <p><strong>Советы по вовлечению:</strong> 
+                            {{ recommendations.gamification.engagement_tips|default:"Отслеживайте прогресс и ставьте мини-цели" }}
+                        </p>
+                    </div>
+                    
+                    <!-- Практические советы -->
+                    <div class="recommendation-card p-3">
+                        <h5><i class="bi bi-lightbulb text-primary"></i> Практические советы</h5>
+                        <p><strong>Инструменты:</strong> 
+                            {{ recommendations.practical_tips.tools|join:", "|default:"Таймер Pomodoro, Карточки для повторения" }}
+                        </p>
+                        <p><strong>Расписание:</strong> 
+                            {{ recommendations.practical_tips.schedule|default:"Занимайтесь в {{ user.preferred_study_time }} ежедневно" }}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Боковая панель действий -->
+            <div class="col-lg-4">
+                <div class="profile-card p-4 mb-4">
+                    <h5 class="fw-bold mb-3">🎮 Ваши следующие шаги</h5>
+                    
+                    <div class="d-grid gap-3">
+                        <a href="{% url 'add_course' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-plus-circle"></i> Добавить первый курс
+                        </a>
+                        
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-house"></i> Перейти в личный кабинет
+                        </a>
+                        
+                        <button class="btn btn-outline-secondary" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Распечатать результаты
+                        </button>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-info-circle"></i> Как используются эти данные?</h6>
+                        <p class="small mb-0">
+                            1. Для создания персонального учебного плана<br>
+                            2. Для подбора формата материалов<br>
+                            3. Для настройки системы геймификации<br>
+                            4. Для адаптивной корректировки стратегии
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Информация о тесте -->
+                <div class="profile-card p-4">
+                    <h5 class="fw-bold mb-3">📅 Информация о тесте</h5>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Дата прохождения:</span>
+                            <span class="fw-bold">{{ user.test_completed_at|date:"d.m.Y H:i" }}</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Длительность концентрации:</span>
+                            <span class="fw-bold">{{ user.concentration_span }} минут</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Лучшее время для учебы:</span>
+                            <span class="fw-bold">
+                                {% if user.preferred_study_time == 'morning' %}Утро
+                                {% elif user.preferred_study_time == 'afternoon' %}День
+                                {% elif user.preferred_study_time == 'evening' %}Вечер
+                                {% else %}Ночь{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning small">
+                        <i class="bi bi-shield-check"></i>
+                        Ваши данные используются только для улучшения вашего обучения.
+                        <a href="#" class="alert-link">Подробнее о конфиденциальности</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

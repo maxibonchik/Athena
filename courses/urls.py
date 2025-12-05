@@ -2,8 +2,10 @@
 from django.urls import path
 from . import views
 
+app_name = 'courses'
+
 urlpatterns = [
-    path('test/', views.TestAPIView.as_view(), name='test_api'),
-    path('api/cognitive-test/questions/', views.CognitiveTestQuestionsView.as_view(), name='cognitive_test_questions'),
-    path('api/cognitive-test/submit/', views.SubmitCognitiveTestView.as_view(), name='submit_cognitive_test'),
+    path('add/', views.add_course, name='add_course'),
+    path('list/', views.course_list, name='course_list'),
+    path('detail/<int:course_id>/', views.course_detail, name='course_detail'),
 ]

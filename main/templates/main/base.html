@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Афина - Платформа обучения{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <h1>Афина</h1>
+        <nav>
+            <a href="{% url 'main:home' %}">Главная</a>
+            <a href="{% url 'main:about' %}">О проекте</a>
+            <a href="{% url 'main:dashboard' %}">Панель управления</a>
+        </nav>
+    </header>
+    
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+    
+    <footer>
+        <p>© 2025 Афина. Все права защищены.</p>
+    </footer>
+</body>
+</html>
