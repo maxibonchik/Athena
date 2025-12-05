@@ -1,0 +1,124 @@
+<!-- templates/main/settings.html -->
+{% extends 'base.html' %}
+
+{% block title %}Настройки - Афина{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-3">
+            <!-- Сайдбар настроек -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Настройки</h5>
+                    <div class="list-group list-group-flush">
+                        <a href="#profile" class="list-group-item list-group-item-action active">
+                            👤 Профиль
+                        </a>
+                        <a href="#notifications" class="list-group-item list-group-item-action">
+                            🔔 Уведомления
+                        </a>
+                        <a href="#learning" class="list-group-item list-group-item-action">
+                            🎓 Обучение
+                        </a>
+                        <a href="#account" class="list-group-item list-group-item-action">
+                            ⚙️ Аккаунт
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <!-- Основной контент настроек -->
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Настройки профиля</h3>
+                    
+                    <!-- Профиль -->
+                    <div id="profile" class="mb-5">
+                        <h4 class="mb-3">👤 Личная информация</h4>
+                        <form>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Имя</label>
+                                    <input type="text" class="form-control" value="{{ user.first_name|default:'' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Фамилия</label>
+                                    <input type="text" class="form-control" value="{{ user.last_name|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" value="{{ user.email }}">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                        </form>
+                    </div>
+
+                    <!-- Стиль обучения -->
+                    <div id="learning" class="mb-5">
+                        <h4 class="mb-3">🎓 Настройки обучения</h4>
+                        <form>
+                            <div class="mb-3">
+                                <label class="form-label">Цель обучения (минут в день)</label>
+                                <input type="number" class="form-control" value="60" min="15" max="240">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Тема интерфейса</label>
+                                <select class="form-select">
+                                    <option value="light">Светлая</option>
+                                    <option value="dark">Темная</option>
+                                    <option value="auto" selected>Авто</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Сохранить настройки</button>
+                        </form>
+                    </div>
+
+                    <!-- Аккаунт -->
+                    <div id="account">
+                        <h4 class="mb-3">⚙️ Управление аккаунтом</h4>
+                        <div class="alert alert-warning">
+                            <strong>Внимание!</strong> Эти действия необратимы.
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#resetModal">
+                                Сбросить прогресс
+                            </button>
+                            <a href="#" class="btn btn-outline-danger">Удалить аккаунт</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно сброса прогресса -->
+<div class="modal fade" id="resetModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Сбросить прогресс?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите сбросить весь прогресс? Это действие:</p>
+                <ul>
+                    <li>Обнулит все ваши XP</li>
+                    <li>Сбросит уровень до 1</li>
+                    <li>Удалит историю обучения</li>
+                </ul>
+                <p class="text-danger"><strong>Это действие необратимо!</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger">Сбросить прогресс</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
